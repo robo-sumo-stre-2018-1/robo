@@ -10,3 +10,4 @@ HC-SR04         | 5000
 FONTES
 Infravermelhos: https://www.filipeflop.com/blog/sensor-de-chama-com-arduino/
 HC-SR04: https://www.filipeflop.com/blog/sensor-ultrassonico-hc-sr04-ao-arduino/
+Ponte H: https://www.filipeflop.com/blog/motor-dc-arduino-ponte-h-l298n/
