@@ -6,10 +6,12 @@
 #define pino_trigger 4
 #define pino_echo 5
 
-const byte mda1=11; //Alocaçâo do primeiro bit do motor da esquerda no pino 11
-const byte mda2=6; //Alocaçâo do segundo bit do motor da esquerda no pino 10
+const byte mda1=8; //Alocaçâo do primeiro bit do motor da esquerda no pino 11
+const byte mda2=9; //Alocaçâo do segundo bit do motor da esquerda no pino 10
 const byte mea1=10; //Alocaçâo do primeiro bit do motor de direita no pino 9 
-const byte mea2=8; //Alocaçâo do segundo bit do motor da direita no pino 8 
+const byte mea2=11; //Alocaçâo do segundo bit do motor da direita no pino 8 
+
+const byte testoscilo = 1; // Alocação do Pino usado para calculo da computação
 
 boolean estadosbf;   //Declaração de uma variavel para receber a leitura do sbf
 boolean estadosbt;   //Declaração de uma variavel para receber a leitura do sbt
@@ -30,6 +32,7 @@ digitalWrite(mea1,HIGH);
 digitalWrite(mea2,LOW); 
 digitalWrite(mda1,HIGH); 
 digitalWrite(mda2,LOW);
+Serial.print("Pra frente");
 }
 
 void andartras() {  //Função andar para trás 
@@ -37,6 +40,7 @@ digitalWrite(mea1,LOW);
 digitalWrite(mea2,HIGH); 
 digitalWrite(mda1,LOW); 
 digitalWrite(mda2,HIGH);
+Serial.print("Pra tras");
 }
 
 void parar() {  //Função parar o tobá 
@@ -44,6 +48,7 @@ digitalWrite(mea1,LOW);
 digitalWrite(mea2,LOW); 
 digitalWrite(mda1,LOW); 
 digitalWrite(mda2,LOW);
+
 }
 
 void girardireita(){  // Função girar para direita 
@@ -51,6 +56,7 @@ digitalWrite(mea1,HIGH);
 digitalWrite(mea2,LOW); 
 digitalWrite(mda1,LOW); 
 digitalWrite(mda2,HIGH);
+Serial.print("Girando direita");
 }
 
 void giraresquerda() {  // Função girar pare esquerda 
@@ -58,6 +64,7 @@ digitalWrite(mea1,LOW);
 digitalWrite(mea2,HIGH); 
 digitalWrite(mda1,HIGH); 
 digitalWrite(mda2,LOW);
+Serial.print("Girando esquerda");
 }
 
 //Inicializa o sensor nos pinos definidos acima
@@ -76,18 +83,14 @@ Thread actionThread = Thread();
 // callback for roboThread
 void sonicCallback(){
 	//Le as informacoes do sensor, em cm e pol
-
-  int time1 = micros();
+  digitalWrite(testoscilo, HIGH);
   long microsec = ultrasonic.timing();
   cmMsec = ultrasonic.convert(microsec, Ultrasonic::CM);
-  int time2 = micros();
-  int computacao = time2 - time1;
-  inMsec = ultrasonic.convert(microsec, Ultrasonic::IN);
+ // inMsec = ultrasonic.convert(microsec, Ultrasonic::IN);
   //Exibe informacoes no serial monitor
-  Serial.print("Distancia em cm: ");
-  Serial.print(cmMsec);
-  Serial.print(" - computaçao: ");
-  Serial.println(computacao);
+  Serial.println("Distancia em cm: ");
+  Serial.println(cmMsec);
+  digitalWrite(testoscilo, LOW);
   
   
 }
@@ -104,16 +107,23 @@ void infraCallback(){
     Serial.println("Fogo detectado !!!");
     estadosbf = 0;
   }
- 
+  else {
+    estadosbf = 1;
+  }
+  
   if (valor_d_2 != 1)
   {
     Serial.println("Fogo detectado !!!");
     estadosbt = 0;
   }
+  else {
+    estadosbt = 1;
+  }
 }
 
 // callback for actionThread
 void actionCallback(){
+  
   if(cmMsec >= 95){
     girardireita();}
   
@@ -130,15 +140,15 @@ void setup(){
 
 	// Configure sonicThread
 	sonicThread->onRun(sonicCallback);
-	sonicThread->setInterval(500);
+	sonicThread->setInterval(5000);
 
 	// Configure infraThread
 	infraThread.onRun(infraCallback);
-	infraThread.setInterval(500);
+	infraThread.setInterval(5000);
 
  // Configure actionThread
   actionThread.onRun(actionCallback);
-  actionThread.setInterval(500);
+  actionThread.setInterval(5000);
 
 	// Adds both threads to the controller
 	controll.add(sonicThread);
@@ -150,6 +160,7 @@ void setup(){
   pinMode(pino_D0, INPUT);
   pinMode(pino_A0_2, INPUT);
   pinMode(pino_D0_2, INPUT);
+  pinMode(testoscilo, OUTPUT);
 
   pinMode(mea1,OUTPUT);       //      ''
   pinMode(mea2,OUTPUT);       //      ''
